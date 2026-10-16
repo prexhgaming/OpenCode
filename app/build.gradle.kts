@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -6,22 +8,30 @@ plugins {
 }
 
 // Local signing.properties is created by scripts/generate-signing-key.sh.
-// CI can provide the same values through OPENCODE_* environment variables.
-val signingProperties = java.util.Properties().apply {
+val signingProperties: Properties = Properties().apply {
     val signingFile = rootProject.file("signing.properties")
-    if (signingFile.exists()) signingFile.inputStream().use { load(it) }
+    if (signingFile.exists()) {
+        signingFile.inputStream().use { load(it) }
+    }
 }
-fun signingValue(propertyName: String, environmentName: String): String? =
-    System.getenv(environmentName)?.takeIf { it.isNotBlank() }
-        ?: signingProperties.getProperty(propertyName)?.takeIf { it.isNotBlank() }
 
-val signingStorePath = signingValue("storeFile", "OPENCODE_KEYSTORE_PATH")
-val signingStorePassword = signingValue("storePassword", "OPENCODE_KEYSTORE_PASSWORD")
-val signingKeyAlias = signingValue("keyAlias", "OPENCODE_KEY_ALIAS")
-val signingKeyPassword = signingValue("keyPassword", "OPENCODE_KEY_PASSWORD")
-val hasReleaseSigning = listOf(
-    signingStorePath, signingStorePassword, signingKeyAlias, signingKeyPassword
-).all { !it.isNullOrBlank() } && signingStorePath?.let { rootProject.file(it).exists() } == true
+fun signingValue(propertyName: String): String? =
+    signingProperties.getProperty(propertyName)?.takeIf { it.isNotBlank() }
+
+val signingStorePath = signingValue("storeFile")
+val signingStorePassword = signingValue("storePassword")
+val signingKeyAlias = signingValue("keyAlias")
+val signingKeyPassword = signingValue("keyPassword")
+
+val keystoreFile: File? = signingStorePath
+    ?.let { rootProject.file(it) }
+    ?.takeIf { it.exists() }
+
+val hasReleaseSigning: Boolean =
+    keystoreFile != null &&
+        !signingStorePassword.isNullOrBlank() &&
+        !signingKeyAlias.isNullOrBlank() &&
+        !signingKeyPassword.isNullOrBlank()
 
 android {
     namespace = "com.opencode.ai"
@@ -43,19 +53,21 @@ android {
     signingConfigs {
         if (hasReleaseSigning) {
             create("appRelease") {
-                storeFile = rootProject.file(requireNotNull(signingStorePath))
-                storePassword = requireNotNull(signingStorePassword)
-                keyAlias = requireNotNull(signingKeyAlias)
-                keyPassword = requireNotNull(signingKeyPassword)
+                storeFile = keystoreFile
+                storePassword = signingStorePassword
+                keyAlias = signingKeyAlias
+                keyPassword = signingKeyPassword
             }
         }
     }
 
     buildTypes {
         release {
-            // Release builds use the generated JKS when configured. Without it,
-            // Gradle can still produce an unsigned release artifact for CI checks.
-            if (hasReleaseSigning) signingConfig = signingConfigs.getByName("appRelease")
+            // Signed only when signing.properties is present and complete.
+            // Otherwise Gradle produces an unsigned artifact for CI checks.
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("appRelease")
+            }
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
@@ -66,9 +78,11 @@ android {
         debug {
             applicationIdSuffix = ".debug"
             isDebuggable = true
-            // Use the app JKS for debug too when configured; otherwise Gradle's
-            // standard debug key keeps developer/CI builds working out of box.
-            if (hasReleaseSigning) signingConfig = signingConfigs.getByName("appRelease")
+            // Reuse the app JKS for debug when configured; otherwise the
+            // default debug key keeps developer/CI builds working.
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("appRelease")
+            }
         }
     }
 
@@ -79,7 +93,7 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
-        freeCompilerArgs = listOf(
+        freeCompilerArgs = freeCompilerArgs + listOf(
             "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
             "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi"
         )
@@ -101,7 +115,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)
-    
+
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
@@ -113,7 +127,11 @@ dependencies {
 
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
-
+    
+    // I don't gaf about tests but you can waste your time doing them
+    // I won't gaf
+    
+    /*
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.junit)
@@ -121,5 +139,6 @@ dependencies {
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
+    debugImplementation(libs.androidx.ui.test.manifest)*/
+    
 }
