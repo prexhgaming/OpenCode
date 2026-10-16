@@ -1,0 +1,102 @@
+name: Android CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Test, lint, and build APKs
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Run unit tests
+        run: gradle --no-daemon :app:testDebugUnitTest
+
+      - name: Run Android lint
+        run: gradle --no-daemon :app:lintDebug
+
+      - name: Configure release signing (optional)
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.OPENCODE_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.OPENCODE_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.OPENCODE_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.OPENCODE_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "No release signing secrets configured; release APK will be unsigned."
+            exit 0
+          fi
+          mkdir -p "$RUNNER_TEMP/opencode-signing"
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/opencode-signing/release.jks"
+          {
+            echo "OPENCODE_KEYSTORE_PATH=$RUNNER_TEMP/opencode-signing/release.jks"
+            echo "OPENCODE_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
+            echo "OPENCODE_KEY_ALIAS=$KEY_ALIAS"
+            echo "OPENCODE_KEY_PASSWORD=$KEY_PASSWORD"
+          } >> "$GITHUB_ENV"
+
+      - name: Build debug APK
+        run: gradle --no-daemon :app:assembleDebug
+
+      - name: Build release APK
+        run: gradle --no-daemon :app:assembleRelease
+
+      - name: Verify APK signatures
+        shell: bash
+        run: |
+          set -euo pipefail
+          for apk in app/build/outputs/apk/debug/*.apk app/build/outputs/apk/release/*.apk; do
+            [ -f "$apk" ] || continue
+            if command -v apksigner >/dev/null 2>&1; then
+              apksigner verify "$apk"
+            else
+              echo "apksigner not on PATH; Gradle signing configuration was used."
+            fi
+          done
+
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: opencode-android-apks
+          path: |
+            app/build/outputs/apk/debug/*.apk
+            app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload test and lint reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-ci-reports
+          path: |
+            app/build/reports/tests/
+            app/build/reports/lint-results-*.html
+            app/build/reports/lint-results-*.xml
+          if-no-files-found: ignore
+          retention-days: 14

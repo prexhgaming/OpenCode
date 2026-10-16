@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">OpenCode</string>
+    <string name="session_title_default">New Session</string>
+    <string name="composer_hint">Ask OpenCode a question or type / for commands...</string>
+    <string name="command_palette_title">Commands</string>
+    <string name="models_dialog_title">Select Model</string>
+    <string name="agents_dialog_title">Select Agent</string>
+    <string name="sessions_title">Sessions</string>
+    <string name="projects_title">Projects</string>
+    <string name="settings_title">Settings</string>
+    <string name="diff_title">Changes</string>
+</resources>

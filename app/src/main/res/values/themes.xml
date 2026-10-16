@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.OpenCode" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">@color/opencode_dark_bg</item>
+        <item name="android:navigationBarColor">@color/opencode_dark_bg</item>
+        <item name="android:windowBackground">@color/opencode_dark_bg</item>
+    </style>
+</resources>
