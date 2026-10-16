@@ -52,7 +52,7 @@ android {
 
     signingConfigs {
         if (hasReleaseSigning) {
-            create("appRelease") {
+            create("OpencodeSigning") {
                 storeFile = keystoreFile
                 storePassword = signingStorePassword
                 keyAlias = signingKeyAlias
@@ -66,7 +66,7 @@ android {
             // Signed only when signing.properties is present and complete.
             // Otherwise Gradle produces an unsigned artifact for CI checks.
             if (hasReleaseSigning) {
-                signingConfig = signingConfigs.getByName("appRelease")
+                signingConfig = signingConfigs.getByName("OpencodeSigning")
             }
             isMinifyEnabled = true
             isShrinkResources = true
@@ -81,7 +81,7 @@ android {
             // Reuse the app JKS for debug when configured; otherwise the
             // default debug key keeps developer/CI builds working.
             if (hasReleaseSigning) {
-                signingConfig = signingConfigs.getByName("appRelease")
+                signingConfig = signingConfigs.getByName("OpencodeSigning")
             }
         }
     }
