@@ -101,6 +101,7 @@ android {
 
     buildFeatures {
         compose = true
+        viewBinding = true
     }
 
     packaging {
@@ -112,6 +113,7 @@ android {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
+    implementation("com.google.android.material:material:1.12.0")
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)

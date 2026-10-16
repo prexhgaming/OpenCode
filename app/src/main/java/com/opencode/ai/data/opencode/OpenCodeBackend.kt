@@ -88,9 +88,9 @@ class OpenCodeBackend(context: Context) : SessionRepository, MessageRepository, 
                     if (u.isNotEmpty() || p.isNotEmpty()) conn.setRequestProperty("Authorization", "Basic " + Base64.encodeToString("$u:$p".toByteArray(), Base64.NO_WRAP))
                     if (conn.responseCode !in 200..299) throw IllegalStateException("SSE HTTP ${conn.responseCode}")
                     BufferedReader(InputStreamReader(conn.inputStream)).use { reader ->
-                        var line: String?
-                        while (isActive && reader.readLine().also { line = it } != null) {
-                            if (line!!.startsWith("data:")) {
+                        while (isActive) {
+                            val line = reader.readLine() ?: break
+                            if (line.startsWith("data:")) {
                                 val sid = currentSessionId.value
                                 if (sid != null) launch { refreshMessages(sid); refreshDiffs() }
                             }

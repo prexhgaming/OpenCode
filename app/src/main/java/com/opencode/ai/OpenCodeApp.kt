@@ -29,5 +29,6 @@ class OpenCodeApp : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
+        CrashManager.install(this)
     }
 }

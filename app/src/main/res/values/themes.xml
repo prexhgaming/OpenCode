@@ -1,7 +1,11 @@
 <resources>
-    <style name="Theme.OpenCode" parent="android:Theme.Material.NoActionBar">
+    <style name="Theme.OpenCode" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/opencode_dark_primary</item>
+        <item name="colorPrimaryVariant">@color/opencode_dark_primary</item>
+        <item name="colorSecondary">@color/opencode_dark_secondary</item>
         <item name="android:statusBarColor">@color/opencode_dark_bg</item>
         <item name="android:navigationBarColor">@color/opencode_dark_bg</item>
         <item name="android:windowBackground">@color/opencode_dark_bg</item>
+        <item name="android:colorAccent">@color/opencode_dark_primary</item>
     </style>
 </resources>
