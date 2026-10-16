@@ -1,6 +1,5 @@
 package com.opencode.ai;
 
-import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -9,21 +8,25 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
-import com.opencode.ai.databinding.ActivityCrashActivityBinding;
+import com.opencode.ai.databinding.ActivityCrashBinding;
 
-/** Plain-Java crash screen, with its XML layout accessed exclusively through View Binding. */
-public final class CrashActivity extends Activity {
+/** AppCompat crash screen, XML layout accessed via View Binding. */
+public final class CrashActivity extends AppCompatActivity {
     public static final String EXTRA_LOG = "com.opencode.ai.extra.CRASH_LOG";
 
-    private ActivityCrashActivityBinding binding;
+    private ActivityCrashBinding binding;
     private String crashLog;
 
     @Override
     protected void onCreate(@Nullable Bundle state) {
         super.onCreate(state);
-        binding = ActivityCrashActivityBinding.inflate(getLayoutInflater());
+        binding = ActivityCrashBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // Wire up the MaterialToolbar as the support action bar.
+        setSupportActionBar(binding.crashToolbar);
 
         crashLog = getIntent().getStringExtra(EXTRA_LOG);
         if (crashLog == null || crashLog.trim().isEmpty()) {

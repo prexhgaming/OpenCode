@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * crashes, SIGKILL, or an OOM that prevents even minimal allocations.
  */
 public final class CrashManager {
+
     private static final String TAG = "OpenCodeCrash";
     private static final String PREFS = "crash_reporter";
     private static final String KEY_LOG = "last_log";

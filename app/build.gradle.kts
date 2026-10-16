@@ -113,7 +113,10 @@ android {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
-    implementation("com.google.android.material:material:1.12.0")
+    implementation(libs.androidx.appcompat)
+    implementation(libs.google.android.material)
+    implementation(libs.androidx.coordinatorlayout)
+
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)
@@ -129,11 +132,12 @@ dependencies {
 
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
-    
-    // I don't gaf about tests but you can waste your time doing them
-    // I won't gaf
-    
+
     /*
+     * Tests — optional.
+     */
+     
+     /*
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.junit)
@@ -141,6 +145,7 @@ dependencies {
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)*/
+    debugImplementation(libs.androidx.ui.test.manifest)
     
+    */
 }
